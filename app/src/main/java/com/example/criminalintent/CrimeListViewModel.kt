@@ -5,7 +5,7 @@ import java.util.Date
 import java.util.UUID
 
 class CrimeListViewModel : ViewModel() {
-    private val crimes = mutableListOf<Crime>()
+    val crimes = mutableListOf<Crime>()
     val size: Int
         get() = crimes.size
     init {

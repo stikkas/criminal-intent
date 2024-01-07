@@ -28,6 +28,9 @@ class CrimeListFragment : Fragment() {
     ): View = FragmentCrimeListBinding.inflate(layoutInflater, container, false).let {
         it.crimeRecyclerView.layoutManager = LinearLayoutManager(context)
         binding = it
+        val crimes = viewModel.crimes
+        val adapter = CrimeListAdapter(crimes)
+        it.crimeRecyclerView.adapter = adapter
         it.root
     }
 
