@@ -8,6 +8,7 @@ class CrimeListViewModel : ViewModel() {
     val crimes = mutableListOf<Crime>()
     val size: Int
         get() = crimes.size
+
     init {
         for (i in 0 until 100) {
             crimes += Crime(
