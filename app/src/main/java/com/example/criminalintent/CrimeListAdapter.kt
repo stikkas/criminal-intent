@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView.VISIBLE
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.criminalintent.databinding.ListItemCrimeBinding
 import com.example.criminalintent.databinding.ListItemPolicycrimeBinding
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 private interface Holder {
     fun bind(crime: Crime)
@@ -19,7 +21,8 @@ class CrimeHolder(private val binding: ListItemCrimeBinding) :
     override fun bind(crime: Crime) {
         with(binding) {
             crimeTitle.text = crime.title
-            crimeDate.text = crime.date.toString()
+            crimeDate.text = SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault())
+                .format(crime.date)
             root.setOnClickListener {
                 Toast.makeText(root.context, "${crime.title} clicked", Toast.LENGTH_SHORT)
                     .show()
