@@ -1,32 +1,25 @@
 package com.example.criminalintent
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.delay
-import java.util.Date
-import java.util.UUID
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 private const val TAG = "CrimeListViewModel"
 
 class CrimeListViewModel : ViewModel() {
-    val crimes = mutableListOf<Crime>()
-    val size: Int
-        get() = crimes.size
+    private val repository = CrimeRepository.get()
+    private val _crimes: MutableStateFlow<List<Crime>> = MutableStateFlow(emptyList())
+    val crimes: StateFlow<List<Crime>>
+        get() = _crimes.asStateFlow()
 
-
-    suspend fun loadCrimes(): List<Crime> {
-        Log.d(TAG, "loadCrimes has been invoked")
-        return if (size == 0) {
-            delay(5000)
-            crimes += (0 until 100).map {
-                Crime(
-                    UUID.randomUUID(),
-                    "Crime #$it",
-                    Date(),
-                    it % 2 == 0
-                )
+    init {
+        viewModelScope.launch {
+            repository.getCrimes().collect {
+                _crimes.value = it
             }
-            crimes
-        } else crimes
+        }
     }
 }

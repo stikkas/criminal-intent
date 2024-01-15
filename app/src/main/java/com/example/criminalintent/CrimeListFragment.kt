@@ -1,7 +1,6 @@
 package com.example.criminalintent
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,8 +23,9 @@ class CrimeListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                val crimes = viewModel.loadCrimes()
-                binding?.crimeRecyclerView?.adapter = CrimeListAdapter(crimes)
+                viewModel.crimes.collect { crimes ->
+                    binding?.crimeRecyclerView?.adapter = CrimeListAdapter(crimes)
+                }
             }
         }
     }
