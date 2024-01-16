@@ -13,20 +13,17 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 private interface Holder {
-    fun bind(crime: Crime)
+    fun bind(crime: Crime, onCrimeClicked: () -> Unit)
 }
 
 class CrimeHolder(private val binding: ListItemCrimeBinding) :
     Holder, ViewHolder(binding.root) {
-    override fun bind(crime: Crime) {
+    override fun bind(crime: Crime, onCrimeClicked: () -> Unit) {
         with(binding) {
             crimeTitle.text = crime.title
             crimeDate.text = SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault())
                 .format(crime.date)
-            root.setOnClickListener {
-                Toast.makeText(root.context, "${crime.title} clicked", Toast.LENGTH_SHORT)
-                    .show()
-            }
+            root.setOnClickListener { onCrimeClicked() }
             crimeSolved.visibility = if (crime.isSolved) VISIBLE else GONE
         }
 
@@ -36,7 +33,7 @@ class CrimeHolder(private val binding: ListItemCrimeBinding) :
 class PoliceCrimeHolder(private val binding: ListItemPolicycrimeBinding) :
     Holder, ViewHolder(binding.root) {
 
-    override fun bind(crime: Crime) {
+    override fun bind(crime: Crime, onCrimeClicked: () -> Unit) {
         with(binding) {
             crimeTitle.text = crime.title
             crimeDate.text = crime.date.toString()
@@ -53,7 +50,10 @@ class PoliceCrimeHolder(private val binding: ListItemPolicycrimeBinding) :
     }
 }
 
-class CrimeListAdapter(private val crimes: List<Crime>) :
+class CrimeListAdapter(
+    private val crimes: List<Crime>,
+    private val onCrimeClicked: () -> Unit
+) :
     RecyclerView.Adapter<ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -69,7 +69,7 @@ class CrimeListAdapter(private val crimes: List<Crime>) :
             (holder as PoliceCrimeHolder)
         } else {
             (holder as CrimeHolder)
-        }.bind(crimes[position])
+        }.bind(crimes[position], onCrimeClicked)
     }
 
     override fun getItemCount(): Int = crimes.size
