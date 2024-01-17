@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/crimeListFragment">
 
@@ -18,6 +18,9 @@
         android:id="@+id/crimeDetailFragment"
         android:name="com.example.criminalintent.CrimeDetailFragment"
         android:label="CrimeDetailFragment"
-        tools:layout="@layout/fragment_crime_detail"
-        />
+        tools:layout="@layout/fragment_crime_detail">
+        <argument
+            android:name="crimeId"
+            app:argType="java.util.UUID" />
+    </fragment>
 </navigation>

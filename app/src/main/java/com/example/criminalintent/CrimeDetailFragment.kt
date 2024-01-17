@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.navArgs
 import com.example.criminalintent.databinding.FragmentCrimeDetailBinding
 import java.util.Date
 import java.util.UUID
@@ -13,6 +14,7 @@ import java.util.UUID
 class CrimeDetailFragment : Fragment() {
     private lateinit var crime: Crime
     private var binding: FragmentCrimeDetailBinding? = null
+    private val args: CrimeDetailFragmentArgs by navArgs()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

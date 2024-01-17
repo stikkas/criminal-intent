@@ -11,19 +11,20 @@ import com.example.criminalintent.databinding.ListItemCrimeBinding
 import com.example.criminalintent.databinding.ListItemPolicycrimeBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.UUID
 
 private interface Holder {
-    fun bind(crime: Crime, onCrimeClicked: () -> Unit)
+    fun bind(crime: Crime, onCrimeClicked: (UUID) -> Unit)
 }
 
 class CrimeHolder(private val binding: ListItemCrimeBinding) :
     Holder, ViewHolder(binding.root) {
-    override fun bind(crime: Crime, onCrimeClicked: () -> Unit) {
+    override fun bind(crime: Crime, onCrimeClicked: (UUID) -> Unit) {
         with(binding) {
             crimeTitle.text = crime.title
             crimeDate.text = SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault())
                 .format(crime.date)
-            root.setOnClickListener { onCrimeClicked() }
+            root.setOnClickListener { onCrimeClicked(crime.id) }
             crimeSolved.visibility = if (crime.isSolved) VISIBLE else GONE
         }
 
@@ -33,7 +34,7 @@ class CrimeHolder(private val binding: ListItemCrimeBinding) :
 class PoliceCrimeHolder(private val binding: ListItemPolicycrimeBinding) :
     Holder, ViewHolder(binding.root) {
 
-    override fun bind(crime: Crime, onCrimeClicked: () -> Unit) {
+    override fun bind(crime: Crime, onCrimeClicked: (UUID) -> Unit) {
         with(binding) {
             crimeTitle.text = crime.title
             crimeDate.text = crime.date.toString()
@@ -52,7 +53,7 @@ class PoliceCrimeHolder(private val binding: ListItemPolicycrimeBinding) :
 
 class CrimeListAdapter(
     private val crimes: List<Crime>,
-    private val onCrimeClicked: () -> Unit
+    private val onCrimeClicked: (UUID) -> Unit
 ) :
     RecyclerView.Adapter<ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
