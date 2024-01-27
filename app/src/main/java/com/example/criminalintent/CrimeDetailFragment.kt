@@ -1,10 +1,16 @@
 package com.example.criminalintent
 
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.net.Uri
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
@@ -25,6 +31,9 @@ class CrimeDetailFragment : Fragment() {
     private val args: CrimeDetailFragmentArgs by navArgs()
     private val crimeDetailViewModel: CrimeDetailViewModel by viewModels {
         CrimeDetailViewModelFactory(args.crimeId)
+    }
+    private val selectSuspect = registerForActivityResult(ActivityResultContracts.PickContact()) {
+        it?.let(::parseContactSelection)
     }
 
     override fun onCreateView(
@@ -47,6 +56,9 @@ class CrimeDetailFragment : Fragment() {
             crimeSolved.setOnCheckedChangeListener { _, isChecked ->
                 crimeDetailViewModel.updateCrime { it.copy(isSolved = isChecked) }
             }
+            crimeSuspect.setOnClickListener { selectSuspect.launch(null) }
+            val selectSuspectIntent = selectSuspect.contract.createIntent(requireContext(), null)
+            crimeSuspect.isEnabled = canResolveIntent(selectSuspectIntent)
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -73,6 +85,20 @@ class CrimeDetailFragment : Fragment() {
                 findNavController().navigate(CrimeDetailFragmentDirections.selectDate(crime.date))
             }
             crimeSolved.isChecked = crime.isSolved
+
+            crimeReport.setOnClickListener {
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, getCrimeReport(crime))
+                    putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject))
+                }
+//                    .let(this@CrimeDetailFragment::startActivity)
+                // Explicit calling of the chooser
+                val chooser = Intent.createChooser(intent, getString(R.string.send_report))
+                startActivity(chooser)
+            }
+
+            crimeSuspect.text = crime.suspect.ifEmpty { getString(R.string.crime_suspect_text) }
         }
     }
 
@@ -99,5 +125,27 @@ class CrimeDetailFragment : Fragment() {
             R.string.crime_report,
             crime.title, dateString, solvedString, suspectText
         )
+    }
+
+    private fun parseContactSelection(contactUri: Uri) {
+        val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+        requireActivity().contentResolver
+            .query(contactUri, queryFields, null, null, null)?.use {
+                if (it.moveToFirst()) {
+                    crimeDetailViewModel.updateCrime { old ->
+                        old.copy(suspect = it.getString(0))
+                    }
+                }
+            }
+    }
+
+    private fun canResolveIntent(intent: Intent): Boolean {
+//        intent.addCategory(Intent.CATEGORY_HOME) // to show that it works
+        val packageManager: PackageManager = requireActivity().packageManager
+        val resolvedActivity: ResolveInfo? = packageManager.resolveActivity(
+            intent,
+            PackageManager.MATCH_DEFAULT_ONLY
+        )
+        return resolvedActivity != null
     }
 }
