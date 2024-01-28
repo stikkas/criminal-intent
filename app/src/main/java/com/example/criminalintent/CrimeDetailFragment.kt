@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
@@ -22,6 +23,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.criminalintent.databinding.FragmentCrimeDetailBinding
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.Date
 
 private const val DATE_FORMAT = "EEE, MMM, dd"
@@ -35,6 +37,12 @@ class CrimeDetailFragment : Fragment() {
     private val selectSuspect = registerForActivityResult(ActivityResultContracts.PickContact()) {
         it?.let(::parseContactSelection)
     }
+    private val takePhoto = registerForActivityResult(ActivityResultContracts.TakePicture()) {
+        if (it && photoName != null) {
+            crimeDetailViewModel.updateCrime { old -> old.copy(photoFileName = photoName) }
+        }
+    }
+    private var photoName: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,6 +67,17 @@ class CrimeDetailFragment : Fragment() {
             crimeSuspect.setOnClickListener { selectSuspect.launch(null) }
             val selectSuspectIntent = selectSuspect.contract.createIntent(requireContext(), null)
             crimeSuspect.isEnabled = canResolveIntent(selectSuspectIntent)
+            crimeCamera.setOnClickListener {
+                photoName = "IMG_${Date()}.JPG"
+                val photoFile = File(requireContext().applicationContext.filesDir, photoName)
+                val photoUri = FileProvider.getUriForFile(
+                    requireContext(), "com.example.criminalintent.frileprovider",
+                    photoFile
+                )
+                takePhoto.launch(photoUri)
+            }
+            val captureImageIntent = takePhoto.contract.createIntent(requireContext(), Uri.EMPTY)
+            crimeCamera.isEnabled = canResolveIntent(captureImageIntent)
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
