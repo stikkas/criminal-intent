@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
+import androidx.core.view.doOnLayout
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
@@ -118,6 +119,7 @@ class CrimeDetailFragment : Fragment() {
             }
 
             crimeSuspect.text = crime.suspect.ifEmpty { getString(R.string.crime_suspect_text) }
+            updatePhoto(crime.photoFileName)
         }
     }
 
@@ -166,5 +168,27 @@ class CrimeDetailFragment : Fragment() {
             PackageManager.MATCH_DEFAULT_ONLY
         )
         return resolvedActivity != null
+    }
+
+    private fun updatePhoto(photoFileName: String?) {
+        if (binding?.crimePhoto?.tag != photoFileName) {
+            val photoFile = photoFileName?.let {
+                File(requireContext().applicationContext.filesDir, it)
+            }
+            if (photoFile?.exists() == true) {
+                binding?.crimePhoto?.apply {
+                    doOnLayout {
+                        val scaledBitmap = getScaledBitmap(photoFile.path, it.width, it.height)
+                        setImageBitmap(scaledBitmap)
+                        tag = photoFileName
+                    }
+                }
+            } else {
+                binding?.crimePhoto?.apply {
+                    setImageBitmap(null)
+                    tag = null
+                }
+            }
+        }
     }
 }
